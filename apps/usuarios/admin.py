@@ -6,4 +6,8 @@ from .models import Usuario
 
 @admin.register(Usuario)
 class UsuarioAdmin(UserAdmin):
-    pass
+    fieldsets = UserAdmin.fieldsets + (
+        ("Datos del WMS", {"fields": ("cedula", "telefono", "rol")}),
+    )
+    list_display = UserAdmin.list_display + ("rol",)
+    list_filter = UserAdmin.list_filter + ("rol",)
