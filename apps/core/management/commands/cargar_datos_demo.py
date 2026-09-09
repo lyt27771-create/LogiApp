@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.contrib.auth.models import Group, Permission
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -9,6 +10,34 @@ from apps.despacho.models import Cliente, LineaPedido, Pedido
 from apps.inventario import services
 from apps.recepcion.models import LineaRecepcion, OrdenRecepcion
 from apps.usuarios.models import Usuario
+
+# Un grupo (y un usuario operario de ejemplo) por modulo, con permisos
+# "solo de ver y agregar" tal como pide la rubrica de validacion por
+# perfiles. Inventario es la excepcion: el kardex nunca se crea a mano,
+# solo se puede ver.
+ROLES_OPERARIO = {
+    "Operario Catálogo": {
+        "username": "operario_catalogo",
+        "permisos": [("catalogo", "view_producto"), ("catalogo", "add_producto")],
+    },
+    "Operario Almacén": {
+        "username": "operario_almacen",
+        "permisos": [("almacen", "view_ubicacion"), ("almacen", "add_ubicacion")],
+    },
+    "Operario Inventario": {
+        "username": "operario_inventario",
+        "permisos": [("inventario", "view_movimiento"), ("inventario", "view_existencia")],
+    },
+    "Operario Recepción": {
+        "username": "operario_recepcion",
+        "permisos": [("recepcion", "view_ordenrecepcion"), ("recepcion", "add_ordenrecepcion")],
+    },
+    "Operario Despacho": {
+        "username": "operario_despacho",
+        "permisos": [("despacho", "view_pedido"), ("despacho", "add_pedido")],
+    },
+}
+CONTRASENA_OPERARIOS_DEMO = "Operario2026!"
 
 
 class Command(BaseCommand):
@@ -120,4 +149,33 @@ class Command(BaseCommand):
         if created:
             LineaRecepcion.objects.create(orden=orden, producto=productos[4], cantidad_esperada=30)
 
+        self._crear_roles_operario()
+
         self.stdout.write(self.style.SUCCESS("Datos de ejemplo cargados correctamente."))
+
+    def _crear_roles_operario(self):
+        for nombre_grupo, config in ROLES_OPERARIO.items():
+            grupo, _ = Group.objects.get_or_create(name=nombre_grupo)
+            permisos = [
+                Permission.objects.get(content_type__app_label=app_label, codename=codename)
+                for app_label, codename in config["permisos"]
+            ]
+            grupo.permissions.set(permisos)
+
+            operario, creado = Usuario.objects.get_or_create(
+                username=config["username"],
+                defaults={"is_staff": True, "rol": Usuario.Roles.OPERARIO},
+            )
+            if creado:
+                operario.set_password(CONTRASENA_OPERARIOS_DEMO)
+                operario.is_staff = True
+                operario.rol = Usuario.Roles.OPERARIO
+                operario.save()
+            operario.groups.add(grupo)
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Usuarios operario de ejemplo listos (contraseña '{CONTRASENA_OPERARIOS_DEMO}'): "
+                + ", ".join(cfg["username"] for cfg in ROLES_OPERARIO.values())
+            )
+        )
