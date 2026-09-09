@@ -18,13 +18,15 @@ operación si no alcanza.
 
 ## Permisos
 
-Listado y detalle exigen `despacho.view_pedido`; un operario necesita además
-`despacho.add_pedido`. `cargar_datos_demo` crea el grupo **Operario Despacho** con ambos y el
-usuario `operario_despacho` / `Operario2026!`.
+Listado y detalle (y la acción de "Despachar"/picking) exigen `despacho.view_pedido`. Despacho es
+uno de los tres módulos operativos: el grupo único **Operario** tiene ese permiso, y
+`cargar_datos_demo` deja listo `operario1` / `Operario2026!` — así es como un Operario "registra
+salidas de inventario" sin acceso a Catálogo ni a Almacén.
 
 ## Cómo probarlo
 
-**Como administrador** (`admin`):
+**Como administrador** (`admin` / `AdminWMS2026!`) o **como operario** (`operario1` /
+`Operario2026!` — el flujo es idéntico para ambos):
 1. `http://127.0.0.1:8000/despacho/` — deben verse los 2 pedidos de ejemplo (3 líneas cada uno).
 2. Entra al detalle de un pedido con líneas pendientes, ingresa una cantidad y una ubicación de
    origen, y pulsa "Despachar": debe actualizar "Despachado", recalcular el estado del pedido
@@ -33,7 +35,7 @@ usuario `operario_despacho` / `Operario2026!`.
    (pero dentro de lo "pendiente" del pedido) — debe rechazarse con el mensaje de
    `registrar_salida` ("Stock insuficiente..."), sin descontar nada.
 
-**Como operario** (`operario_despacho` / `Operario2026!`):
-1. `/despacho/` responde 200; el resto de módulos responde 403.
+Como operario, además confirma que no hay forma de eliminar un pedido ni una línea desde esta
+pantalla, y que `/catalogo/`, `/almacen/` y `/usuarios/` quedan fuera de alcance.
 
 **Sin sesión:** redirige al login.
