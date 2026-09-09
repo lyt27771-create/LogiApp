@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Recepción · WMS UPEC{% endblock %}
+
+{% block content %}
+  <div class="app-topbar">
+    <div>
+      <h1>Órdenes de recepción</h1>
+      <p class="lead-sub">{{ page_obj.paginator.count }} en total</p>
+    </div>
+    <a href="/admin/recepcion/ordenrecepcion/" class="admin-link">Administrar en el panel →</a>
+  </div>
+
+  <form class="filter-bar" method="get">
+    <select name="estado">
+      <option value="">Todos los estados</option>
+      {% for valor, etiqueta in estados %}
+        <option value="{{ valor }}" {% if estado_actual == valor %}selected{% endif %}>{{ etiqueta }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-filter">Filtrar</button>
+  </form>
+
+  <div class="panel-dark">
+    {% if ordenes %}
+      <table class="activity-table">
+        <thead>
+          <tr><th>Número</th><th>Proveedor</th><th>Fecha esperada</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for orden in ordenes %}
+            <tr>
+              <td>{{ orden.numero }}</td>
+              <td>{{ orden.proveedor.razon_social }}</td>
+              <td>{{ orden.fecha_esperada|date:"d/m/Y" }}</td>
+              <td><span class="tag tag-traslado">{{ orden.get_estado_display }}</span></td>
+              <td><a href="{% url 'recepcion:detalle' orden.pk %}" class="admin-link">Ver líneas →</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if page_obj.has_other_pages %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}">← Anterior</a>
+          {% endif %}
+          <span class="pagination-current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}">Siguiente →</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% else %}
+      <p class="empty-hint">No hay órdenes de recepción registradas.</p>
+    {% endif %}
+  </div>
+{% endblock %}
