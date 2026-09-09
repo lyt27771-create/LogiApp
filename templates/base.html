@@ -19,7 +19,7 @@
         <a href="{% url 'almacen:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'almacen' %} active{% endif %}" title="Almacén">🏬</a>
         <a href="{% url 'inventario:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'inventario' %} active{% endif %}" title="Inventario">📊</a>
         <a href="{% url 'recepcion:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'recepcion' %} active{% endif %}" title="Recepción">📥</a>
-        <a href="/admin/despacho/pedido/" class="nav-icon" title="Despacho">📤</a>
+        <a href="{% url 'despacho:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'despacho' %} active{% endif %}" title="Despacho">📤</a>
       </div>
 
       <div class="nav-foot">
