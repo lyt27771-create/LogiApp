@@ -1,0 +1,67 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WMS · UPEC — Ingreso</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="{% static 'css/estilos.css' %}" rel="stylesheet">
+</head>
+<body class="login-page">
+
+  <div class="rack-grid"></div>
+  <span class="loc-tag a">A · 01 · 03</span>
+  <span class="loc-tag b">B · 04 · 11</span>
+  <span class="loc-tag c">C · 02 · 07</span>
+  <span class="loc-tag d">D · 05 · 02</span>
+
+  <div>
+    <div class="brandmark">
+      <div class="tag">WMS &middot; UPEC</div>
+      <h1>Sistema de Gestión de Almacenes</h1>
+      <p>Carrera de Logística y Transporte</p>
+    </div>
+
+    <form class="login-card" id="loginForm" method="post" action="{% url 'login' %}" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <h2>Ingresar al sistema</h2>
+      <p class="sub">Usa tu usuario institucional para continuar.</p>
+
+      {% if form.errors %}
+        <div class="login-alert">
+          {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+          {% if not form.non_field_errors %}Revisa los datos ingresados.{% endif %}
+        </div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label class="form-label" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+        {{ form.username }}
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+        {{ form.password }}
+      </div>
+
+      <button type="submit" class="btn-ingresar">Iniciar sesión</button>
+
+      <div class="helper-row">
+        <span style="color:#8a93a2;">¿Olvidaste tu contraseña? Contacta al administrador.</span>
+        <span style="color:#9aa4b2;">v1.0</span>
+      </div>
+    </form>
+
+    <p class="footnote">Universidad Politécnica Estatal del Carchi · Tulcán, Ecuador</p>
+  </div>
+
+  <div class="door left" id="doorLeft">
+    <span class="door-label" id="doorLabel">VALIDANDO ACCESO…</span>
+  </div>
+  <div class="door right" id="doorRight"></div>
+
+<script src="{% static 'js/doors.js' %}"></script>
+</body>
+</html>

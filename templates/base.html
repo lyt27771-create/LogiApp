@@ -1,0 +1,46 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}WMS · UPEC{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="{% static 'css/estilos.css' %}" rel="stylesheet">
+</head>
+<body class="app-page">
+
+  <div class="app-shell">
+    <aside class="app-sidebar">
+      <a href="{% url 'dashboard' %}" class="brand-mark" title="WMS · UPEC">W</a>
+
+      <div class="nav-stack">
+        <a href="{% url 'dashboard' %}" class="nav-icon active" title="Tablero">🏠</a>
+        <a href="/admin/catalogo/producto/" class="nav-icon" title="Catálogo">📦</a>
+        <a href="/admin/almacen/bodega/" class="nav-icon" title="Almacén">🏬</a>
+        <a href="/admin/inventario/existencia/" class="nav-icon" title="Inventario">📊</a>
+        <a href="/admin/recepcion/ordenrecepcion/" class="nav-icon" title="Recepción">📥</a>
+        <a href="/admin/despacho/pedido/" class="nav-icon" title="Despacho">📤</a>
+      </div>
+
+      <div class="nav-foot">
+        <div class="avatar" title="{{ user.get_full_name|default:user.username }} · {{ user.get_rol_display }}">
+          {{ user.username|upper|slice:":2" }}
+        </div>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="logout-btn" title="Salir">⏻</button>
+        </form>
+      </div>
+    </aside>
+
+    <main class="app-main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <div class="door left" id="doorLeft"></div>
+  <div class="door right" id="doorRight"></div>
+
+<script src="{% static 'js/doors.js' %}"></script>
+</body>
+</html>

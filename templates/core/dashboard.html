@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Tablero · WMS UPEC{% endblock %}
+
+{% block content %}
+  <div class="app-topbar">
+    <div>
+      <h1>Buen día, {{ user.get_full_name|default:user.username }}</h1>
+      <p class="lead-sub">Resumen general del almacén · {{ user.get_rol_display }}</p>
+    </div>
+    <form class="search-box" method="get" action="/admin/catalogo/producto/">
+      <span class="ic">🔍</span>
+      <input type="text" name="q" placeholder="Buscar producto por SKU o nombre…">
+    </form>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-dark"><div class="n">{{ productos_activos }}</div><div class="l">Productos activos</div></div>
+    <div class="kpi-dark"><div class="n">{{ ubicaciones_ocupadas }}</div><div class="l">Ubicaciones ocupadas</div></div>
+    <div class="kpi-dark"><div class="n">{{ recepciones_pendientes }}</div><div class="l">Recepciones pendientes</div></div>
+    <div class="kpi-dark"><div class="n">{{ pedidos_pendientes }}</div><div class="l">Pedidos pendientes</div></div>
+  </div>
+
+  {{ mov_chart_labels|json_script:"mov-labels" }}
+  {{ mov_chart_data|json_script:"mov-data" }}
+  {{ abc_chart_labels|json_script:"abc-labels" }}
+  {{ abc_chart_data|json_script:"abc-data" }}
+
+  <div class="chart-row">
+    <div class="panel-dark">
+      <p class="section-label">Movimientos por tipo</p>
+      {% if mov_chart_total %}
+        <canvas id="chartMovimientos" height="200"></canvas>
+      {% else %}
+        <p class="empty-hint">Todavía no hay movimientos registrados en el kardex.</p>
+      {% endif %}
+    </div>
+    <div class="panel-dark">
+      <p class="section-label">Productos por clasificación ABC</p>
+      {% if abc_chart_total %}
+        <canvas id="chartAbc" height="200"></canvas>
+      {% else %}
+        <p class="empty-hint">Todavía no hay productos activos en el catálogo.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="panel-dark">
+      <p class="section-label">Últimos movimientos</p>
+      {% if ultimos_movimientos %}
+        <table class="activity-table">
+          <thead>
+            <tr><th>Fecha</th><th>Tipo</th><th>Producto</th><th>Cant.</th><th>Usuario</th></tr>
+          </thead>
+          <tbody>
+            {% for mov in ultimos_movimientos %}
+              <tr>
+                <td>{{ mov.creado_en|date:"d/m H:i" }}</td>
+                <td><span class="tag tag-{{ mov.tipo|lower }}">{{ mov.get_tipo_display }}</span></td>
+                <td>{{ mov.producto.sku }}</td>
+                <td>{{ mov.cantidad }}</td>
+                <td>{{ mov.usuario.username }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="empty-hint">Todavía no hay movimientos registrados en el kardex.</p>
+      {% endif %}
+    </div>
+
+    <div class="panel-dark">
+      <p class="section-label">Productos con stock bajo</p>
+      {% if productos_bajo_stock %}
+        <ul class="stock-list">
+          {% for producto in productos_bajo_stock %}
+            <li>
+              <div>
+                <div class="t">{{ producto.sku }} · {{ producto.nombre }}</div>
+                <div class="d">Mínimo: {{ producto.stock_minimo }}</div>
+              </div>
+              <div class="stock-qty">{{ producto.stock_total }}</div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="empty-hint">Ningún producto activo está por debajo de su stock mínimo.</p>
+      {% endif %}
+    </div>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  (function () {
+    const get = (id) => JSON.parse(document.getElementById(id).textContent);
+    const gridColor = 'rgba(255,255,255,.06)';
+    const textColor = 'rgba(238,241,247,.65)';
+    Chart.defaults.color = textColor;
+    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+
+    const movCanvas = document.getElementById('chartMovimientos');
+    if (movCanvas) {
+      new Chart(movCanvas, {
+        type: 'bar',
+        data: {
+          labels: get('mov-labels'),
+          datasets: [{
+            data: get('mov-data'),
+            backgroundColor: '#5b82f2',
+            borderRadius: 6,
+            maxBarThickness: 36,
+          }],
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false } },
+            y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: gridColor } },
+          },
+        },
+      });
+    }
+
+    const abcCanvas = document.getElementById('chartAbc');
+    if (abcCanvas) {
+      new Chart(abcCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: get('abc-labels'),
+          datasets: [{
+            data: get('abc-data'),
+            backgroundColor: ['#5b82f2', '#e8952f', '#3a4a6b'],
+            borderColor: '#0b1f3a',
+            borderWidth: 2,
+          }],
+        },
+        options: {
+          plugins: { legend: { position: 'bottom' } },
+        },
+      });
+    }
+  })();
+</script>
+{% endblock %}
