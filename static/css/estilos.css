@@ -341,3 +341,48 @@ body.app-page {
   font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem;
   color: #ff9a6e; background: rgba(232, 92, 47, .12); border-radius: 8px; padding: 3px 10px;
 }
+
+/* ============ Formularios de página completa (Gestión de Usuarios) ============ */
+.form-card {
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 16px;
+  padding: 26px 28px;
+  max-width: 480px;
+  backdrop-filter: blur(10px);
+}
+.field-group { margin-bottom: 16px; }
+.field-group label { display: block; font-size: .8rem; font-weight: 600; color: rgba(238, 241, 247, .7); margin-bottom: 6px; }
+.field-input {
+  width: 100%; box-sizing: border-box;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 9px; padding: 9px 12px; color: #eef1f7; font-size: .88rem;
+}
+.field-input:focus { outline: none; border-color: var(--blue-400); }
+.field-errors { color: #ff9a6e; font-size: .78rem; margin-top: 4px; }
+.field-help { color: rgba(238, 241, 247, .4); font-size: .76rem; margin-top: 4px; }
+.form-actions { display: flex; gap: 10px; margin-top: 6px; }
+.btn-secondary {
+  background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .12);
+  color: #eef1f7; border-radius: 9px; padding: 9px 20px; font-size: .86rem;
+  text-decoration: none; display: inline-flex; align-items: center;
+}
+.btn-secondary:hover { background: rgba(255, 255, 255, .1); color: #eef1f7; }
+.btn-submit {
+  background: var(--blue-500); border: none; border-radius: 9px; color: #fff;
+  font-weight: 600; font-size: .86rem; padding: 9px 22px; cursor: pointer;
+}
+.btn-submit:hover { background: #2650cf; }
+
+.row-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.row-actions form { display: inline; }
+.btn-link {
+  background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--blue-400); font-size: .78rem; font-family: inherit;
+}
+.btn-link:hover { text-decoration: underline; }
+.btn-link.danger { color: #ff9a6e; }
+.badge-estado { padding: 2px 9px; border-radius: 999px; font-size: .72rem; font-weight: 600; }
+.badge-activo { background: rgba(47, 200, 130, .15); color: #4ade9a; }
+.badge-inactivo { background: rgba(238, 241, 247, .12); color: rgba(238, 241, 247, .55); }

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Usuarios · WMS UPEC{% endblock %}
+
+{% block content %}
+  <div class="app-topbar">
+    <div>
+      <h1>Gestión de usuarios</h1>
+      <p class="lead-sub">{{ page_obj.paginator.count }} en total</p>
+    </div>
+    <a href="{% url 'usuarios:crear' %}" class="admin-link">+ Crear usuario</a>
+  </div>
+
+  <form class="filter-bar" method="get">
+    <input type="text" name="q" value="{{ q }}" placeholder="Buscar por usuario o nombre…">
+    <select name="rol">
+      <option value="">Todos los roles</option>
+      {% for valor, etiqueta in roles %}
+        <option value="{{ valor }}" {% if rol_actual == valor %}selected{% endif %}>{{ etiqueta }}</option>
+      {% endfor %}
+    </select>
+    <select name="estado">
+      <option value="">Todos los estados</option>
+      <option value="activo" {% if estado_actual == "activo" %}selected{% endif %}>Activo</option>
+      <option value="inactivo" {% if estado_actual == "inactivo" %}selected{% endif %}>Inactivo</option>
+    </select>
+    <button type="submit" class="btn-filter">Filtrar</button>
+  </form>
+
+  <div class="panel-dark">
+    {% if usuarios %}
+      <table class="activity-table">
+        <thead>
+          <tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr>
+        </thead>
+        <tbody>
+          {% for u in usuarios %}
+            <tr>
+              <td>{{ u.username }}</td>
+              <td>{{ u.get_full_name|default:"—" }}</td>
+              <td><span class="tag tag-traslado">{{ u.get_rol_display }}{% if u.is_superuser %} (superusuario){% endif %}</span></td>
+              <td>
+                <span class="badge-estado {% if u.is_active %}badge-activo{% else %}badge-inactivo{% endif %}">
+                  {% if u.is_active %}Activo{% else %}Inactivo{% endif %}
+                </span>
+              </td>
+              <td class="row-actions">
+                {% if not u.is_superuser %}
+                  <a href="{% url 'usuarios:editar' u.pk %}" class="btn-link">Editar</a>
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="usuario_id" value="{{ u.pk }}">
+                    <input type="hidden" name="accion" value="toggle_activo">
+                    <button type="submit" class="btn-link">{% if u.is_active %}Desactivar{% else %}Activar{% endif %}</button>
+                  </form>
+                  <form method="post" onsubmit="return confirm('¿Generar una nueva contraseña temporal para {{ u.username }}?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="usuario_id" value="{{ u.pk }}">
+                    <input type="hidden" name="accion" value="restablecer_password">
+                    <button type="submit" class="btn-link">Restablecer contraseña</button>
+                  </form>
+                {% else %}
+                  <span class="empty-hint">—</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if page_obj.has_other_pages %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if rol_actual %}&rol={{ rol_actual }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}">← Anterior</a>
+          {% endif %}
+          <span class="pagination-current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if rol_actual %}&rol={{ rol_actual }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}">Siguiente →</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% else %}
+      <p class="empty-hint">No hay usuarios que coincidan con la búsqueda.</p>
+    {% endif %}
+  </div>
+{% endblock %}

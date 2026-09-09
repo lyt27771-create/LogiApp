@@ -6,12 +6,17 @@
   <div class="app-topbar">
     <div>
       <h1>Buen día, {{ user.get_full_name|default:user.username }}</h1>
-      <p class="lead-sub">Resumen general del almacén · {{ user.get_rol_display }}</p>
+      <p class="lead-sub">
+        {% if es_administrador %}Dashboard Administrativo{% else %}Dashboard Operativo{% endif %}
+        · {{ user.get_rol_display }}
+      </p>
     </div>
-    <form class="search-box" method="get" action="/admin/catalogo/producto/">
-      <span class="ic">🔍</span>
-      <input type="text" name="q" placeholder="Buscar producto por SKU o nombre…">
-    </form>
+    {% if es_administrador %}
+      <form class="search-box" method="get" action="/admin/catalogo/producto/">
+        <span class="ic">🔍</span>
+        <input type="text" name="q" placeholder="Buscar producto por SKU o nombre…">
+      </form>
+    {% endif %}
   </div>
 
   <div class="kpi-row">
@@ -23,8 +28,10 @@
 
   {{ mov_chart_labels|json_script:"mov-labels" }}
   {{ mov_chart_data|json_script:"mov-data" }}
-  {{ abc_chart_labels|json_script:"abc-labels" }}
-  {{ abc_chart_data|json_script:"abc-data" }}
+  {% if es_administrador %}
+    {{ abc_chart_labels|json_script:"abc-labels" }}
+    {{ abc_chart_data|json_script:"abc-data" }}
+  {% endif %}
 
   <div class="chart-row">
     <div class="panel-dark">
@@ -35,14 +42,16 @@
         <p class="empty-hint">Todavía no hay movimientos registrados en el kardex.</p>
       {% endif %}
     </div>
-    <div class="panel-dark">
-      <p class="section-label">Productos por clasificación ABC</p>
-      {% if abc_chart_total %}
-        <canvas id="chartAbc" height="200"></canvas>
-      {% else %}
-        <p class="empty-hint">Todavía no hay productos activos en el catálogo.</p>
-      {% endif %}
-    </div>
+    {% if es_administrador %}
+      <div class="panel-dark">
+        <p class="section-label">Productos por clasificación ABC</p>
+        {% if abc_chart_total %}
+          <canvas id="chartAbc" height="200"></canvas>
+        {% else %}
+          <p class="empty-hint">Todavía no hay productos activos en el catálogo.</p>
+        {% endif %}
+      </div>
+    {% endif %}
   </div>
 
   <div class="chart-row">
@@ -70,24 +79,26 @@
       {% endif %}
     </div>
 
-    <div class="panel-dark">
-      <p class="section-label">Productos con stock bajo</p>
-      {% if productos_bajo_stock %}
-        <ul class="stock-list">
-          {% for producto in productos_bajo_stock %}
-            <li>
-              <div>
-                <div class="t">{{ producto.sku }} · {{ producto.nombre }}</div>
-                <div class="d">Mínimo: {{ producto.stock_minimo }}</div>
-              </div>
-              <div class="stock-qty">{{ producto.stock_total }}</div>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p class="empty-hint">Ningún producto activo está por debajo de su stock mínimo.</p>
-      {% endif %}
-    </div>
+    {% if es_administrador %}
+      <div class="panel-dark">
+        <p class="section-label">Productos con stock bajo</p>
+        {% if productos_bajo_stock %}
+          <ul class="stock-list">
+            {% for producto in productos_bajo_stock %}
+              <li>
+                <div>
+                  <div class="t">{{ producto.sku }} · {{ producto.nombre }}</div>
+                  <div class="d">Mínimo: {{ producto.stock_minimo }}</div>
+                </div>
+                <div class="stock-qty">{{ producto.stock_total }}</div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="empty-hint">Ningún producto activo está por debajo de su stock mínimo.</p>
+        {% endif %}
+      </div>
+    {% endif %}
   </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
