@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Catálogo · WMS UPEC{% endblock %}
+
+{% block content %}
+  <div class="app-topbar">
+    <div>
+      <h1>Catálogo</h1>
+      <p class="lead-sub">Productos activos · {{ page_obj.paginator.count }} en total</p>
+    </div>
+    <a href="/admin/catalogo/producto/" class="admin-link">Administrar en el panel →</a>
+  </div>
+
+  <form class="filter-bar" method="get">
+    <input type="text" name="q" value="{{ q }}" placeholder="Buscar por SKU o nombre…">
+    <select name="categoria">
+      <option value="">Todas las categorías</option>
+      {% for cat in categorias %}
+        <option value="{{ cat.id }}" {% if categoria_id == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.nombre }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-filter">Filtrar</button>
+  </form>
+
+  <div class="panel-dark">
+    {% if productos %}
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th>SKU</th><th>Nombre</th><th>Categoría</th><th>Unidad</th>
+            <th>ABC</th><th>Stock mín.</th><th>Stock máx.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for producto in productos %}
+            <tr>
+              <td>{{ producto.sku }}</td>
+              <td>{{ producto.nombre }}</td>
+              <td>{{ producto.categoria.nombre }}</td>
+              <td>{{ producto.unidad_medida.abreviatura }}</td>
+              <td><span class="tag tag-traslado">{{ producto.get_clasificacion_abc_display }}</span></td>
+              <td>{{ producto.stock_minimo }}</td>
+              <td>{{ producto.stock_maximo }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if page_obj.has_other_pages %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if categoria_id %}&categoria={{ categoria_id }}{% endif %}">← Anterior</a>
+          {% endif %}
+          <span class="pagination-current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if categoria_id %}&categoria={{ categoria_id }}{% endif %}">Siguiente →</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% else %}
+      <p class="empty-hint">No hay productos que coincidan con la búsqueda.</p>
+    {% endif %}
+  </div>
+{% endblock %}
