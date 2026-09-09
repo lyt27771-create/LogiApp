@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Almacén · WMS UPEC{% endblock %}
+
+{% block content %}
+  <div class="app-topbar">
+    <div>
+      <h1>Almacén</h1>
+      <p class="lead-sub">Ubicaciones activas · {{ page_obj.paginator.count }} en total</p>
+    </div>
+    <a href="/admin/almacen/ubicacion/" class="admin-link">Administrar en el panel →</a>
+  </div>
+
+  <form class="filter-bar" method="get">
+    <select name="bodega">
+      <option value="">Todas las bodegas</option>
+      {% for bodega in bodegas %}
+        <option value="{{ bodega.id }}" {% if bodega_id == bodega.id|stringformat:"s" %}selected{% endif %}>{{ bodega.codigo }} · {{ bodega.nombre }}</option>
+      {% endfor %}
+    </select>
+    <select name="zona">
+      <option value="">Todas las zonas</option>
+      {% for zona in zonas %}
+        <option value="{{ zona.id }}" {% if zona_id == zona.id|stringformat:"s" %}selected{% endif %}>{{ zona.bodega.codigo }} / {{ zona.codigo }} · {{ zona.nombre }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-filter">Filtrar</button>
+  </form>
+
+  <div class="panel-dark">
+    {% if ubicaciones %}
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th>Código</th><th>Bodega</th><th>Zona</th><th>Tipo de zona</th>
+            <th>Capacidad kg</th><th>Capacidad m³</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ubic in ubicaciones %}
+            <tr>
+              <td>{{ ubic.codigo }}</td>
+              <td>{{ ubic.zona.bodega.nombre }}</td>
+              <td>{{ ubic.zona.nombre }}</td>
+              <td><span class="tag tag-traslado">{{ ubic.zona.get_tipo_display }}</span></td>
+              <td>{{ ubic.capacidad_kg }}</td>
+              <td>{{ ubic.capacidad_m3 }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if page_obj.has_other_pages %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if bodega_id %}&bodega={{ bodega_id }}{% endif %}{% if zona_id %}&zona={{ zona_id }}{% endif %}">← Anterior</a>
+          {% endif %}
+          <span class="pagination-current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if bodega_id %}&bodega={{ bodega_id }}{% endif %}{% if zona_id %}&zona={{ zona_id }}{% endif %}">Siguiente →</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% else %}
+      <p class="empty-hint">No hay ubicaciones que coincidan con el filtro.</p>
+    {% endif %}
+  </div>
+{% endblock %}
