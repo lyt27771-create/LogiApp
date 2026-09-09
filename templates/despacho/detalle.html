@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ pedido.numero }} · Despacho · WMS UPEC{% endblock %}
+
+{% block content %}
+  <div class="app-topbar">
+    <div>
+      <h1>Pedido {{ pedido.numero }}</h1>
+      <p class="lead-sub">{{ pedido.cliente.razon_social }} · <span class="tag tag-traslado">{{ pedido.get_estado_display }}</span></p>
+    </div>
+    <a href="{% url 'despacho:listado' %}" class="admin-link">← Volver al listado</a>
+  </div>
+
+  <div class="panel-dark">
+    <table class="activity-table">
+      <thead>
+        <tr><th>Producto</th><th>Solicitado</th><th>Despachado</th><th>Pendiente</th><th>Registrar picking</th></tr>
+      </thead>
+      <tbody>
+        {% for linea in lineas %}
+          <tr>
+            <td>{{ linea.producto.sku }} · {{ linea.producto.nombre }}</td>
+            <td>{{ linea.cantidad_solicitada }}</td>
+            <td>{{ linea.cantidad_despachada }}</td>
+            <td>{{ linea.pendiente }}</td>
+            <td>
+              {% if linea.pendiente > 0 %}
+                <form method="post" class="linea-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="linea_id" value="{{ linea.pk }}">
+                  <input type="number" step="0.01" min="0.01" max="{{ linea.pendiente }}" name="cantidad" placeholder="Cant." required>
+                  <select name="ubicacion_origen" required>
+                    {% for ubic in ubicaciones %}
+                      <option value="{{ ubic.pk }}">{{ ubic.codigo }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit" class="btn-filter">Despachar</button>
+                </form>
+              {% else %}
+                <span class="empty-hint">Completa</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

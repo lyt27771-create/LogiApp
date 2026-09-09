@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Despacho · WMS UPEC{% endblock %}
+
+{% block content %}
+  <div class="app-topbar">
+    <div>
+      <h1>Pedidos</h1>
+      <p class="lead-sub">{{ page_obj.paginator.count }} en total</p>
+    </div>
+    <a href="/admin/despacho/pedido/" class="admin-link">Administrar en el panel →</a>
+  </div>
+
+  <form class="filter-bar" method="get">
+    <select name="estado">
+      <option value="">Todos los estados</option>
+      {% for valor, etiqueta in estados %}
+        <option value="{{ valor }}" {% if estado_actual == valor %}selected{% endif %}>{{ etiqueta }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-filter">Filtrar</button>
+  </form>
+
+  <div class="panel-dark">
+    {% if pedidos %}
+      <table class="activity-table">
+        <thead>
+          <tr><th>Número</th><th>Cliente</th><th>Prioridad</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for pedido in pedidos %}
+            <tr>
+              <td>{{ pedido.numero }}</td>
+              <td>{{ pedido.cliente.razon_social }}</td>
+              <td>{{ pedido.get_prioridad_display }}</td>
+              <td><span class="tag tag-traslado">{{ pedido.get_estado_display }}</span></td>
+              <td><a href="{% url 'despacho:detalle' pedido.pk %}" class="admin-link">Ver líneas →</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if page_obj.has_other_pages %}
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}">← Anterior</a>
+          {% endif %}
+          <span class="pagination-current">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}">Siguiente →</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% else %}
+      <p class="empty-hint">No hay pedidos registrados.</p>
+    {% endif %}
+  </div>
+{% endblock %}
