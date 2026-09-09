@@ -15,11 +15,24 @@
 
       <div class="nav-stack">
         <a href="{% url 'dashboard' %}" class="nav-icon{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}" title="Tablero">🏠</a>
-        <a href="{% url 'catalogo:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'catalogo' %} active{% endif %}" title="Catálogo">📦</a>
-        <a href="{% url 'almacen:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'almacen' %} active{% endif %}" title="Almacén">🏬</a>
-        <a href="{% url 'inventario:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'inventario' %} active{% endif %}" title="Inventario">📊</a>
-        <a href="{% url 'recepcion:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'recepcion' %} active{% endif %}" title="Recepción">📥</a>
-        <a href="{% url 'despacho:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'despacho' %} active{% endif %}" title="Despacho">📤</a>
+        {% if perms.catalogo.view_producto %}
+          <a href="{% url 'catalogo:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'catalogo' %} active{% endif %}" title="Catálogo">📦</a>
+        {% endif %}
+        {% if perms.almacen.view_ubicacion %}
+          <a href="{% url 'almacen:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'almacen' %} active{% endif %}" title="Almacén">🏬</a>
+        {% endif %}
+        {% if perms.inventario.view_movimiento %}
+          <a href="{% url 'inventario:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'inventario' %} active{% endif %}" title="Inventario">📊</a>
+        {% endif %}
+        {% if perms.recepcion.view_ordenrecepcion %}
+          <a href="{% url 'recepcion:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'recepcion' %} active{% endif %}" title="Recepción">📥</a>
+        {% endif %}
+        {% if perms.despacho.view_pedido %}
+          <a href="{% url 'despacho:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'despacho' %} active{% endif %}" title="Despacho">📤</a>
+        {% endif %}
+        {% if user.is_superuser %}
+          <a href="{% url 'usuarios:listado' %}" class="nav-icon{% if request.resolver_match.app_name == 'usuarios' %} active{% endif %}" title="Usuarios">👤</a>
+        {% endif %}
       </div>
 
       <div class="nav-foot">

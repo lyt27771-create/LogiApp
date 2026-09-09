@@ -3,11 +3,16 @@ from django.db import models
 
 
 class Usuario(AbstractUser):
+    """El sistema tiene únicamente dos tipos de usuario:
+
+    - Administrador: se crea con createsuperuser, acceso total (incluye /admin/).
+    - Operario: lo crea un Administrador desde Gestión de Usuarios, acceso solo
+      a los módulos operativos (inventario, recepción, despacho), sin /admin/.
+    """
+
     class Roles(models.TextChoices):
         ADMINISTRADOR = "ADMIN", "Administrador"
-        JEFE_BODEGA = "JEFE", "Jefe de Bodega"
         OPERARIO = "OPERARIO", "Operario"
-        CONSULTA = "CONSULTA", "Consulta"
 
     cedula = models.CharField(
         max_length=20,
@@ -25,8 +30,12 @@ class Usuario(AbstractUser):
     rol = models.CharField(
         max_length=20,
         choices=Roles.choices,
-        default=Roles.CONSULTA,
+        default=Roles.OPERARIO,
     )
+
+    @property
+    def es_administrador(self):
+        return self.is_superuser
 
     def __str__(self):
         return self.username

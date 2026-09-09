@@ -14,32 +14,30 @@ from apps.recepcion import services as recepcion_services
 from apps.recepcion.models import LineaRecepcion, OrdenRecepcion
 from apps.usuarios.models import Usuario
 
-# Un grupo (y un usuario operario de ejemplo) por modulo, con permisos
-# "solo de ver y agregar" tal como pide la rubrica de validacion por
-# perfiles. Inventario es la excepcion: el kardex nunca se crea a mano,
-# solo se puede ver.
-ROLES_OPERARIO = {
-    "Operario Catálogo": {
-        "username": "operario_catalogo",
-        "permisos": [("catalogo", "view_producto"), ("catalogo", "add_producto")],
-    },
-    "Operario Almacén": {
-        "username": "operario_almacen",
-        "permisos": [("almacen", "view_ubicacion"), ("almacen", "add_ubicacion")],
-    },
-    "Operario Inventario": {
-        "username": "operario_inventario",
-        "permisos": [("inventario", "view_movimiento"), ("inventario", "view_existencia")],
-    },
-    "Operario Recepción": {
-        "username": "operario_recepcion",
-        "permisos": [("recepcion", "view_ordenrecepcion"), ("recepcion", "add_ordenrecepcion")],
-    },
-    "Operario Despacho": {
-        "username": "operario_despacho",
-        "permisos": [("despacho", "view_pedido"), ("despacho", "add_pedido")],
-    },
-}
+# Rol único de Operario (ver roles-definitivos): acceso solo a los módulos
+# operativos (inventario, recepción, despacho) — Catálogo y Almacén son datos
+# maestros/configuración, reservados al Administrador. El kardex nunca se
+# crea a mano (no hay add_movimiento): las entradas/salidas del Operario
+# pasan por las pantallas de Recepción/Despacho, que a su vez llaman a
+# apps/inventario/services.py.
+GRUPO_OPERARIO = "Operario"
+PERMISOS_OPERARIO = [
+    ("inventario", "view_existencia"),
+    ("inventario", "view_movimiento"),
+    ("recepcion", "view_ordenrecepcion"),
+    ("despacho", "view_pedido"),
+]
+# Nombres de los grupos del esquema anterior (uno por módulo), para limpiarlos
+# si venían de una ejecución previa de este comando.
+GRUPOS_OBSOLETOS = [
+    "Operario Catálogo", "Operario Almacén", "Operario Inventario",
+    "Operario Recepción", "Operario Despacho",
+]
+USUARIOS_OPERARIO_OBSOLETOS = [
+    "operario_catalogo", "operario_almacen", "operario_inventario",
+    "operario_recepcion", "operario_despacho",
+]
+USERNAME_OPERARIO_DEMO = "operario1"
 CONTRASENA_OPERARIOS_DEMO = "Operario2026!"
 
 
@@ -48,10 +46,11 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-        usuario, _ = Usuario.objects.get_or_create(
-            username="demo",
-            defaults={"rol": Usuario.Roles.JEFE_BODEGA, "is_staff": True},
-        )
+        usuario, _ = Usuario.objects.get_or_create(username="demo")
+        usuario.rol = Usuario.Roles.OPERARIO
+        usuario.is_staff = False
+        usuario.is_superuser = False
+        usuario.save()
 
         # --- Almacén: 1 bodega, 3 zonas, 12 ubicaciones ---
         bodega, _ = Bodega.objects.get_or_create(
@@ -231,28 +230,33 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Datos de ejemplo cargados correctamente."))
 
     def _crear_roles_operario(self):
-        for nombre_grupo, config in ROLES_OPERARIO.items():
-            grupo, _ = Group.objects.get_or_create(name=nombre_grupo)
-            permisos = [
-                Permission.objects.get(content_type__app_label=app_label, codename=codename)
-                for app_label, codename in config["permisos"]
-            ]
-            grupo.permissions.set(permisos)
+        # Limpieza del esquema anterior (un grupo/usuario por módulo), ya
+        # reemplazado por el rol único "Operario".
+        Group.objects.filter(name__in=GRUPOS_OBSOLETOS).delete()
+        Usuario.objects.filter(username__in=USUARIOS_OPERARIO_OBSOLETOS).delete()
 
-            operario, creado = Usuario.objects.get_or_create(
-                username=config["username"],
-                defaults={"is_staff": True, "rol": Usuario.Roles.OPERARIO},
-            )
-            if creado:
-                operario.set_password(CONTRASENA_OPERARIOS_DEMO)
-                operario.is_staff = True
-                operario.rol = Usuario.Roles.OPERARIO
-                operario.save()
-            operario.groups.add(grupo)
+        grupo, _ = Group.objects.get_or_create(name=GRUPO_OPERARIO)
+        permisos = [
+            Permission.objects.get(content_type__app_label=app_label, codename=codename)
+            for app_label, codename in PERMISOS_OPERARIO
+        ]
+        grupo.permissions.set(permisos)
+
+        operario, creado = Usuario.objects.get_or_create(
+            username=USERNAME_OPERARIO_DEMO,
+            defaults={"is_staff": False, "rol": Usuario.Roles.OPERARIO},
+        )
+        if creado:
+            operario.set_password(CONTRASENA_OPERARIOS_DEMO)
+        operario.is_staff = False
+        operario.is_superuser = False
+        operario.rol = Usuario.Roles.OPERARIO
+        operario.save()
+        operario.groups.add(grupo)
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"Usuarios operario de ejemplo listos (contraseña '{CONTRASENA_OPERARIOS_DEMO}'): "
-                + ", ".join(cfg["username"] for cfg in ROLES_OPERARIO.values())
+                f"Usuario operario de ejemplo listo: '{USERNAME_OPERARIO_DEMO}' "
+                f"/ '{CONTRASENA_OPERARIOS_DEMO}' (grupo '{GRUPO_OPERARIO}')."
             )
         )
