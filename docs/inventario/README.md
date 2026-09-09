@@ -24,12 +24,13 @@ tocar `Existencia` a mano.
 
 El listado y el admin exigen `inventario.view_movimiento` (y `view_existencia` para consultar
 saldos). A propósito **no se concede `add_movimiento`** a nadie que no sea superusuario: el kardex
-solo nace de `services.py`. `cargar_datos_demo` crea el grupo **Operario Inventario** (solo
-lectura) y el usuario `operario_inventario` / `Operario2026!`.
+solo nace de `services.py`. Inventario es uno de los tres módulos operativos (junto con Recepción
+y Despacho): el grupo único **Operario** tiene esos dos permisos de solo lectura, y
+`cargar_datos_demo` deja listo el usuario `operario1` / `Operario2026!` para probarlo.
 
 ## Cómo probarlo
 
-**Como administrador** (`admin`):
+**Como administrador** (`admin` / `AdminWMS2026!`):
 1. `http://127.0.0.1:8000/inventario/` — kardex completo, filtrable por tipo de movimiento.
 2. `/admin/inventario/movimiento/` — confirma que **no** hay botón de agregar ni de editar/borrar
    un movimiento existente (solo "View").
@@ -37,7 +38,8 @@ lectura) y el usuario `operario_inventario` / `Operario2026!`.
    `cargar_datos_demo`, llama a `registrar_salida` con una cantidad mayor a la existencia — debe
    lanzar `ValidationError` con el mensaje "Stock insuficiente...".
 
-**Como operario** (`operario_inventario` / `Operario2026!`):
-1. `/inventario/` responde 200 (de solo lectura); el resto de módulos responde 403.
+**Como operario** (`operario1` / `Operario2026!`):
+1. `/inventario/` responde 200 (de solo lectura, sin botón de agregar/editar); Catálogo y Almacén
+   responden 403, y `/admin/` no es alcanzable.
 
 **Sin sesión:** redirige al login.

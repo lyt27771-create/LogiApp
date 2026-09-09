@@ -16,20 +16,19 @@ que se genera solo, p. ej. `B1-ALM-1-A-1-1`). Vive en `apps/almacen/`.
 
 ## Permisos
 
-El listado y el admin exigen `almacen.view_ubicacion`; un operario necesita además
-`almacen.add_ubicacion`. `cargar_datos_demo` crea el grupo **Operario Almacén** con ambos y el
-usuario `operario_almacen` / `Operario2026!`.
+Igual que Catálogo, Almacén es configuración del layout físico: exclusivo del **Administrador**.
+El grupo `Operario` no tiene `almacen.view_ubicacion`, así que no ve el ícono en el sidebar y
+`/almacen/` le da 403.
 
 ## Cómo probarlo
 
-**Como administrador** (`admin`):
+**Como administrador** (`admin` / `AdminWMS2026!`):
 1. `http://127.0.0.1:8000/almacen/` — deben verse las 12 ubicaciones de ejemplo (1 bodega, 3
    zonas), con los filtros de bodega y zona funcionando.
 2. `/admin/almacen/ubicacion/` — el filtro lateral por bodega/zona debe funcionar igual.
 
-**Como operario** (`operario_almacen` / `Operario2026!`):
-1. `/almacen/` responde 200; `/catalogo/`, `/inventario/`, `/recepcion/`, `/despacho/` responden
-   403 (y lo mismo en sus rutas de `/admin/...`).
-2. No tiene opción de eliminar ubicaciones en el admin.
+**Como operario** (`operario1` / `Operario2026!`, o cualquiera creado desde `/usuarios/crear/`):
+1. El sidebar no muestra el ícono de Almacén.
+2. `/almacen/` responde **403**; `/admin/almacen/...` no es alcanzable (sin `is_staff`).
 
 **Sin sesión:** cualquier URL de arriba redirige al login.
