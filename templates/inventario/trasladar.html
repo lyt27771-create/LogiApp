@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar traslado · WMS UPEC{% endblock %}
+
+{% block content %}
+  <div class="app-topbar">
+    <div>
+      <h1>Registrar traslado</h1>
+      <p class="lead-sub">Mueve existencia de una ubicación a otra. Genera un movimiento de TRASLADO en el kardex.</p>
+    </div>
+    <a href="{% url 'inventario:listado' %}" class="admin-link">← Volver al kardex</a>
+  </div>
+
+  <form method="post" class="form-card">
+    {% csrf_token %}
+    <div class="field-group">
+      <label for="producto">Producto</label>
+      <select name="producto" id="producto" class="field-input" required>
+        {% for producto in productos %}
+          <option value="{{ producto.pk }}">{{ producto.sku }} · {{ producto.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field-group">
+      <label for="ubicacion_origen">Ubicación de origen</label>
+      <select name="ubicacion_origen" id="ubicacion_origen" class="field-input" required>
+        {% for ubic in ubicaciones %}
+          <option value="{{ ubic.pk }}">{{ ubic.codigo }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field-group">
+      <label for="ubicacion_destino">Ubicación de destino</label>
+      <select name="ubicacion_destino" id="ubicacion_destino" class="field-input" required>
+        {% for ubic in ubicaciones %}
+          <option value="{{ ubic.pk }}">{{ ubic.codigo }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field-group">
+      <label for="cantidad">Cantidad</label>
+      <input type="number" step="0.01" min="0.01" name="cantidad" id="cantidad" class="field-input" required>
+    </div>
+    <div class="field-group">
+      <label for="documento_referencia">Documento de referencia (opcional)</label>
+      <input type="text" name="documento_referencia" id="documento_referencia" class="field-input" placeholder="p. ej. ajuste de picking">
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-submit">Registrar traslado</button>
+      <a href="{% url 'inventario:listado' %}" class="btn-secondary">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}

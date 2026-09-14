@@ -14,6 +14,12 @@ from apps.inventario import services as inventario_services
 
 @transaction.atomic
 def registrar_picking_linea(*, linea, cantidad, ubicacion_origen, usuario):
+    if linea.pedido.estado in (Pedido.Estado.DESPACHADO, Pedido.Estado.CANCELADO):
+        raise ValidationError(
+            f"El pedido {linea.pedido.numero} está {linea.pedido.get_estado_display().lower()} "
+            "y no admite más picking."
+        )
+
     if cantidad <= 0:
         raise ValidationError("La cantidad debe ser mayor a cero.")
 

@@ -14,6 +14,12 @@ from apps.recepcion.models import OrdenRecepcion
 
 @transaction.atomic
 def registrar_recepcion_linea(*, linea, cantidad, ubicacion_destino, usuario):
+    if linea.orden.estado in (OrdenRecepcion.Estado.COMPLETADA, OrdenRecepcion.Estado.CANCELADA):
+        raise ValidationError(
+            f"La orden {linea.orden.numero} está {linea.orden.get_estado_display().lower()} "
+            "y no admite más recepciones."
+        )
+
     if cantidad <= 0:
         raise ValidationError("La cantidad debe ser mayor a cero.")
 
