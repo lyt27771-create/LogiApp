@@ -14,16 +14,18 @@ from apps.recepcion import services as recepcion_services
 from apps.recepcion.models import LineaRecepcion, OrdenRecepcion
 from apps.usuarios.models import Usuario
 
-# Rol único de Operario (ver roles-definitivos): acceso solo a los módulos
-# operativos (inventario, recepción, despacho) — Catálogo y Almacén son datos
-# maestros/configuración, reservados al Administrador. El kardex nunca se
-# crea a mano (no hay add_movimiento): las entradas/salidas del Operario
-# pasan por las pantallas de Recepción/Despacho, que a su vez llaman a
-# apps/inventario/services.py.
+# Rol único de Operario (ver roles-definitivos): consulta en los 5 módulos,
+# pero solo puede "escribir" a través de las pantallas controladas
+# (Recepción, Despacho y Registrar traslado), nunca crear/editar/eliminar
+# maestros de Catálogo o Almacén ni tocar el Kardex directamente. Las
+# entradas/salidas/traslados siempre pasan por apps/inventario/services.py.
 GRUPO_OPERARIO = "Operario"
 PERMISOS_OPERARIO = [
+    ("catalogo", "view_producto"),
+    ("almacen", "view_ubicacion"),
     ("inventario", "view_existencia"),
     ("inventario", "view_movimiento"),
+    ("inventario", "add_movimiento"),  # habilita solo la pantalla "Registrar traslado"
     ("recepcion", "view_ordenrecepcion"),
     ("despacho", "view_pedido"),
 ]

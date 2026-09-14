@@ -6,6 +6,7 @@ from apps.core.models import ModeloBase
 
 class Categoria(ModeloBase):
     nombre = models.CharField(max_length=100, unique=True)
+    descripcion = models.CharField(max_length=255, blank=True)
     categoria_padre = models.ForeignKey(
         "self",
         on_delete=models.PROTECT,

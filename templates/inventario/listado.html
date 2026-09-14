@@ -8,7 +8,10 @@
       <h1>Kardex</h1>
       <p class="lead-sub">Historial de movimientos · {{ page_obj.paginator.count }} en total · solo lectura</p>
     </div>
-    {% if user.is_superuser %}<a href="/admin/inventario/existencia/" class="admin-link">Ver existencias en el panel →</a>{% endif %}
+    <div style="display:flex; gap:16px; align-items:center;">
+      {% if perms.inventario.add_movimiento %}<a href="{% url 'inventario:trasladar' %}" class="admin-link">+ Registrar traslado</a>{% endif %}
+      {% if user.is_superuser %}<a href="/admin/inventario/existencia/" class="admin-link">Ver existencias en el panel →</a>{% endif %}
+    </div>
   </div>
 
   <form class="filter-bar" method="get">

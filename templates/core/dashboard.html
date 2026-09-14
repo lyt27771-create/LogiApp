@@ -20,8 +20,12 @@
   </div>
 
   <div class="kpi-row">
-    <div class="kpi-dark"><div class="n">{{ productos_activos }}</div><div class="l">Productos activos</div></div>
-    <div class="kpi-dark"><div class="n">{{ ubicaciones_ocupadas }}</div><div class="l">Ubicaciones ocupadas</div></div>
+    {% if not es_administrador %}
+      <div class="kpi-dark"><div class="n">{{ tareas_pendientes }}</div><div class="l">Tareas pendientes</div></div>
+    {% else %}
+      <div class="kpi-dark"><div class="n">{{ productos_activos }}</div><div class="l">Productos activos</div></div>
+      <div class="kpi-dark"><div class="n">{{ ubicaciones_ocupadas }}</div><div class="l">Ubicaciones ocupadas</div></div>
+    {% endif %}
     <div class="kpi-dark"><div class="n">{{ recepciones_pendientes }}</div><div class="l">Recepciones pendientes</div></div>
     <div class="kpi-dark"><div class="n">{{ pedidos_pendientes }}</div><div class="l">Pedidos pendientes</div></div>
   </div>
@@ -35,11 +39,11 @@
 
   <div class="chart-row">
     <div class="panel-dark">
-      <p class="section-label">Movimientos por tipo</p>
+      <p class="section-label">{% if es_administrador %}Movimientos por tipo{% else %}Tus movimientos por tipo{% endif %}</p>
       {% if mov_chart_total %}
         <canvas id="chartMovimientos" height="200"></canvas>
       {% else %}
-        <p class="empty-hint">Todavía no hay movimientos registrados en el kardex.</p>
+        <p class="empty-hint">{% if es_administrador %}Todavía no hay movimientos registrados en el kardex.{% else %}Todavía no has registrado movimientos.{% endif %}</p>
       {% endif %}
     </div>
     {% if es_administrador %}
@@ -56,7 +60,7 @@
 
   <div class="chart-row">
     <div class="panel-dark">
-      <p class="section-label">Últimos movimientos</p>
+      <p class="section-label">{% if es_administrador %}Últimos movimientos{% else %}Tus últimos movimientos{% endif %}</p>
       {% if ultimos_movimientos %}
         <table class="activity-table">
           <thead>
@@ -75,7 +79,7 @@
           </tbody>
         </table>
       {% else %}
-        <p class="empty-hint">Todavía no hay movimientos registrados en el kardex.</p>
+        <p class="empty-hint">{% if es_administrador %}Todavía no hay movimientos registrados en el kardex.{% else %}Todavía no has registrado movimientos.{% endif %}</p>
       {% endif %}
     </div>
 

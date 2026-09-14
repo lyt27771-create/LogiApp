@@ -6,6 +6,7 @@ from apps.core.models import ModeloBase
 class Bodega(ModeloBase):
     codigo = models.CharField(max_length=10, unique=True)
     nombre = models.CharField(max_length=100)
+    descripcion = models.CharField(max_length=255, blank=True)
     direccion = models.CharField(max_length=255, blank=True)
     latitud = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitud = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)

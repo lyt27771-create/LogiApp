@@ -31,19 +31,25 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context["pedidos_pendientes"] = Pedido.objects.filter(
             estado__in=[Pedido.Estado.PENDIENTE, Pedido.Estado.EN_PICKING]
         ).count()
+        context["tareas_pendientes"] = context["recepciones_pendientes"] + context["pedidos_pendientes"]
 
-        # --- Gráfico: movimientos del kardex por tipo ---
+        # Administrador ve el kardex completo; Operario ve solo lo que él
+        # mismo registró ("Últimos movimientos realizados por el usuario").
+        movimientos_base = Movimiento.objects.all()
+        if not context["es_administrador"]:
+            movimientos_base = movimientos_base.filter(usuario=self.request.user)
+
+        # --- Gráfico: movimientos por tipo, dentro de ese mismo alcance ---
         tipo_labels = dict(Movimiento.TipoMovimiento.choices)
-        movimientos_qs = Movimiento.objects.values("tipo").annotate(total=Count("id")).order_by("tipo")
-        context["mov_chart_labels"] = [tipo_labels.get(r["tipo"], r["tipo"]) for r in movimientos_qs]
-        context["mov_chart_data"] = [r["total"] for r in movimientos_qs]
+        mov_por_tipo = movimientos_base.values("tipo").annotate(total=Count("id")).order_by("tipo")
+        context["mov_chart_labels"] = [tipo_labels.get(r["tipo"], r["tipo"]) for r in mov_por_tipo]
+        context["mov_chart_data"] = [r["total"] for r in mov_por_tipo]
         context["mov_chart_total"] = sum(context["mov_chart_data"])
 
-        # --- Actividad reciente (kardex): la ven ambos roles ---
-        context["ultimos_movimientos"] = (
-            Movimiento.objects.select_related("producto", "ubicacion_origen", "ubicacion_destino", "usuario")
-            .order_by("-creado_en")[:8]
-        )
+        # --- Actividad reciente ---
+        context["ultimos_movimientos"] = movimientos_base.select_related(
+            "producto", "ubicacion_origen", "ubicacion_destino", "usuario"
+        ).order_by("-creado_en")[:8]
 
         # --- El resto es analítica de catálogo/reportes: solo Administrador ---
         if context["es_administrador"]:
