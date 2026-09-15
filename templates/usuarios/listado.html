@@ -59,6 +59,12 @@
                     <input type="hidden" name="accion" value="restablecer_password">
                     <button type="submit" class="btn-link">Restablecer contraseña</button>
                   </form>
+                  <form method="post" onsubmit="return confirm('¿Eliminar a {{ u.username }} definitivamente? Esto no se puede deshacer. Si tiene movimientos en el kardex, no se podrá borrar.');">
+                    {% csrf_token %}
+                    <input type="hidden" name="usuario_id" value="{{ u.pk }}">
+                    <input type="hidden" name="accion" value="eliminar">
+                    <button type="submit" class="btn-link danger">Eliminar</button>
+                  </form>
                 {% else %}
                   <span class="empty-hint">—</span>
                 {% endif %}

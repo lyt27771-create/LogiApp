@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import Group
+from django.db.models import ProtectedError
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.crypto import get_random_string
@@ -80,6 +81,18 @@ class UsuarioListView(SoloAdministradorMixin, ListView):
                 request,
                 f"Contraseña de {usuario.username} restablecida. Nueva contraseña temporal: {nueva_clave}",
             )
+        elif accion == "eliminar":
+            nombre = usuario.username
+            try:
+                usuario.delete()
+            except ProtectedError:
+                messages.error(
+                    request,
+                    f"No se puede eliminar a {nombre}: tiene movimientos registrados en el kardex "
+                    "(el historial nunca se borra). Desactívalo en su lugar.",
+                )
+            else:
+                messages.success(request, f"Usuario {nombre} eliminado.")
 
         return redirect("usuarios:listado")
 
